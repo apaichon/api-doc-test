@@ -1,0 +1,114 @@
+package loan
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+)
+
+func setupHttpLoanService(useTestDB bool) (LoanService, error) {
+	db, err := setupDB(useTestDB)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create service with mocks for HTTP handler testing
+	service := NewLoanService(
+		db,
+		&mockCreditService{},
+		&mockPaymentService{},
+		&mockDocumentService{},
+	)
+
+	return service, nil
+}
+
+func TestLoanHandler_ApplyForLoan(t *testing.T) {
+	// Setup
+	service, err := setupHttpLoanService(false)
+	if err != nil {
+		t.Fatalf("Failed to setup test: %v", err)
+	}
+	handler := NewLoanHandler(service)
+
+	tests := []struct {
+		name           string
+		requestBody    string
+		expectedStatus int
+	}{
+		{
+			name: "Valid loan application",
+			requestBody: `{
+				"id": "APP-0005",
+				"applicant_id": "USR-001",
+				"amount": 10000,
+				"term": 12,
+				"purpose": "Home Improvement",
+				"evidence": [
+					{
+						"id": "EVI-001",
+						"type": "INCOME_STATEMENT",
+						"description": "Monthly Income Statement"
+					}
+				]
+			}`,
+			expectedStatus: http.StatusCreated,
+		},
+		{
+			name:           "Invalid JSON request",
+			requestBody:    `{"invalid json`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name: "Invalid loan amount",
+			requestBody: `{
+				"id": "APP-0006",
+				"applicant_id": "USR-002",
+				"amount": -5000,
+				"term": 12,
+				"evidence": []
+			}`,
+			expectedStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create request
+			req := httptest.NewRequest(http.MethodPost, "/loans/apply", strings.NewReader(tt.requestBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			// Create response recorder
+			rr := httptest.NewRecorder()
+
+			// Handle request
+			handler.ApplyForLoan(rr, req)
+
+			// Check status code
+			if status := rr.Code; status != tt.expectedStatus {
+				t.Errorf("handler returned wrong status code: got %v want %v",
+					status, tt.expectedStatus)
+			}
+
+			// For successful requests, verify response body contains expected fields
+			if tt.expectedStatus == http.StatusCreated {
+				var response LoanApplication
+				err := json.NewDecoder(rr.Body).Decode(&response)
+				if err != nil {
+					t.Errorf("Failed to decode response body: %v", err)
+					return
+				}
+
+				// Verify essential fields are present
+				if response.ID == "" {
+					t.Error("Expected loan ID in response, got empty string")
+				}
+				if response.Status != StatusPending {
+					t.Errorf("Expected status to be %v, got %v", StatusPending, response.Status)
+				}
+			}
+		})
+	}
+}

@@ -1,0 +1,40 @@
+.scrollable-div {
+    overflow-y: auto;
+    /* Enables vertical scrolling */
+    max-height: 400px;
+    /* Set a maximum height for the div */
+}
+
+.mermaid-zoom {
+    overflow: hidden;
+    position: relative;
+}
+
+.mermaid-zoom svg {
+    transition: transform 0.2s ease;
+    transform-origin: center center;
+}
+
+.mermaid-zoom:hover svg {
+    transform: scale(1.2);
+    /* Adjust the scale factor as needed */
+}
+
+/* Global logo style */
+.slidev-layout::before {
+    content: '';
+    background-image: url('/images/logo/Arise-Logo2.png');
+    background-size: 100px auto;
+    background-repeat: no-repeat;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 100px;
+    height: 50px;
+    z-index: 1000;
+}
+
+/* Adjust logo for dark themes */
+.dark .slidev-layout::before {
+    filter: brightness(0.8);
+}

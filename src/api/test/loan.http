@@ -1,0 +1,50 @@
+### Login and store token
+# @name login
+POST http://127.0.0.1:4000/api/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "password1234"
+}
+
+### Store auth token from login response
+@authToken = {{login.response.body.data.token}}
+
+### Update credit score
+POST http://127.0.0.1:4000/loans/updateCreditScore?loanID=APP-0010
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+    "loan_id": "APP-0010",
+    "credit_score": 999,
+    "interest_rate": 0.05
+}
+
+# Review application
+###
+GET http://127.0.0.1:4000/loans/review?loanID=APP-0010
+Authorization: {{authToken}}
+
+
+# Approve loan
+###
+POST http://127.0.0.1:4000/loans/approve
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+    "loan_id": "APP-0010",
+    "interest_rate": 0.05
+}
+
+# Disburse loan
+###
+POST http://127.0.0.1:4000/loans/disburse
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+    "loan_id": "APP-0010"
+}

@@ -1,0 +1,193 @@
+basePath: /api
+definitions:
+  internal_auth.LoginRequest:
+    properties:
+      password:
+        example: secret123
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+  internal_auth.LoginResponse:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  internal_auth.RegisterRequest:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      password:
+        example: secret123
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+  internal_auth.Role:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      id:
+        example: "1"
+        type: string
+      is_super_admin:
+        type: boolean
+      name:
+        example: admin
+        type: string
+      permissions:
+        example:
+        - read
+        - write
+        items:
+          type: string
+        type: array
+      role_desc:
+        type: string
+      role_id:
+        type: integer
+      role_name:
+        type: string
+      status_id:
+        type: integer
+      updated_at:
+        type: string
+      updated_by:
+        type: string
+    type: object
+  internal_auth.User:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: "1"
+        type: string
+      password:
+        type: string
+      role_id:
+        example: "1"
+        type: string
+      salt:
+        type: string
+      status_id:
+        type: integer
+      user_id:
+        description: Keep for backward compatibility
+        type: integer
+      username:
+        example: johndoe
+        type: string
+    type: object
+  types.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+host: localhost:4000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A RESTful API service with authentication, payments, and monitoring
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: API Service
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and get JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_auth.LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: User login
+      tags:
+      - auth
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user in the system
+      parameters:
+      - description: User registration details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_auth.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Register new user
+      tags:
+      - auth
+  /role:
+    post:
+      consumes:
+      - application/json
+      description: Create a new role in the system
+      parameters:
+      - description: Role information
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.Role'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_auth.Role'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Create a new role
+      tags:
+      - auth
+schemes:
+- http
+- https
+swagger: "2.0"

@@ -1,0 +1,85 @@
+package main
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/graphql-go/graphql"
+)
+
+// SubstringDirective is used to truncate a string field to a specified length
+var SubstringDirective = graphql.NewDirective(graphql.DirectiveConfig{
+	Name: "substring",
+	Description: "Truncates a string field to the specified length",
+	Locations: []string{
+		graphql.DirectiveLocationField,
+	},
+	Args: graphql.FieldConfigArgument{
+		"maxLength": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.Int),
+			Description: "The maximum length of the string",
+		},
+	},
+})
+
+// substringDirectiveFunc is the resolver function for the substring directive
+func substringDirectiveFunc(resolve graphql.FieldResolveFn) graphql.FieldResolveFn {
+	return func(p graphql.ResolveParams) (interface{}, error) {
+		// First, resolve the field
+		result, err := resolve(p)
+		if err != nil {
+			return nil, err
+		}
+
+		// Check if the result is a string
+		strValue, ok := result.(string)
+		if !ok {
+			return result, nil
+		}
+
+		// Get the maxLength argument
+		maxLength, ok := p.Args["maxLength"].(int)
+		if !ok {
+			return result, nil
+		}
+
+		// Truncate the string if it's longer than maxLength
+		if len(strValue) > maxLength {
+			return strings.TrimSpace(strValue[:maxLength]) + "...", nil
+		}
+
+		return strValue, nil
+	}
+}
+
+// Example usage in a schema
+var schema, _ = graphql.NewSchema(graphql.SchemaConfig{
+	Query: graphql.NewObject(graphql.ObjectConfig{
+		Name: "Query",
+		Fields: graphql.Fields{
+			"longText": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return "This is a very long text that we want to truncate", nil
+				},
+			},
+		},
+	}),
+	Directives: []*graphql.Directive{SubstringDirective},
+})
+
+// Don't forget to add the directive to your ExecuteParams
+var params = graphql.Params{
+	Schema: schema,
+	RequestString: `
+		query {
+			longText @substring(maxLength: 10)
+		}
+	`,
+}
+
+func main() {
+// Execute the query
+result := graphql.Do(params)
+fmt.Printf("%#v", result)
+}
