@@ -1023,6 +1023,39 @@ layout: section
 layout: two-cols
 ---
 
+# The Testing Pyramid
+
+<img src="/images/testing/test-pyramid.svg" style="height: 400px;overflow-y: auto;">
+
+::right::
+
+<div style="height: 500px;overflow-y: auto;">
+
+## Unit Tests
+- The foundation and largest portion of the pyramid
+- Tests individual functions, methods, or classes in isolation
+- Fast, cheap, and focused on specific code units
+- Run frequently during development (with each code change)
+- Provide quick feedback on code correctness
+- Catch bugs early and reduce regression risk
+
+## Integration Tests
+- Tests how components or services work together
+- Simulate real user scenarios
+- Test interactions between different parts of the system
+- Typically 15-20% of your test suite
+
+## End-to-End (E2E) Tests
+- Tests the complete application flow
+- Simulate real user scenarios from start to finish
+- Slowest, most expensive, and most brittle tests
+- Valuable for verifying critical business scenarios
+- Typically 5-10% of your test suite
+</div>
+---
+layout: default
+---
+
 # Unit Testing
 
 
@@ -1387,6 +1420,33 @@ func TestLoanAPI_Integration(t *testing.T) {
 ```
 </div>
 </v-click>
+
+---
+layout: default
+---
+
+# End-to-End Testing Tools
+
+- Playwright
+- Cypress
+- Selenium
+- Puppeteer
+- WebDriver
+- WebDriverIO
+- Nightwatch
+
+---
+layout: default
+---
+
+# End-to-End Testing Loan API Flow
+
+ - Step 1: Login
+ - Step 2: Apply for loan
+ - Step 3: Check loan status
+ - Step 4: Disburse loan
+ - Step 5: Make payment
+ - Step 6: Close loan
 
 ---
 layout: default
